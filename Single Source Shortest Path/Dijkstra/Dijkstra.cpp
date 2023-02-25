@@ -24,7 +24,6 @@ using namespace std;
 struct Vertex {
     int idx;
     int dist;
-    Vertex* prev;
     vector<pair<Vertex*, int>> adj;
 };
 
@@ -32,19 +31,33 @@ int v, e;
 int start, dest;
 vector<Vertex*> vertexArr;
 vector<Vertex*> pq;
+vector<tuple<int, int, int>> routeData;
 
 bool cmp(Vertex* a, Vertex* b) {
     return a->idx < b->idx;
 }
 
+void InitializeSingleSource(int start) {
+    for (int i = 1; i <= v; i++) {
+        Vertex* tmpVertex;
+        if (i == start) tmpVertex = new Vertex{ i, 0 };
+        else tmpVertex = new Vertex{ i, 150000000 };
+        pq.push_back(tmpVertex);
+    }
+    for (auto e: routeData) {
+        pq[get<0>(e) - 1]->adj.push_back(make_pair(pq[get<1>(e) - 1], get<2>(e)));
+        pq[get<1>(e) - 1]->adj.push_back(make_pair(pq[get<0>(e) - 1], get<2>(e)));
+    }
+    vertexArr.clear();
+}
+
 void Relax(Vertex* u, Vertex* v, int w) {
     if (v->dist > u->dist + w) {
         v->dist = u->dist + w;
-        v->prev = u;
     }
 }
 
-int minVertex() // Priotity Queue 대체용{
+int minVertex() {
     int minDist = numeric_limits<int>::max();
     int minIdx = 0;
     for (int i = 0; i < pq.size(); i++) {
@@ -57,6 +70,7 @@ int minVertex() // Priotity Queue 대체용{
 }
 
 void Dijkstra(int start) {
+    InitializeSingleSource(start);
 
     while (!pq.empty()) {
         int minIdx = minVertex();
@@ -75,50 +89,17 @@ int main() {
     cin >> v;
     cin >> e;
 
-    for (int i = 1; i <= v; i++) {
-        Vertex* tmpVertex;
-        tmpVertex = new Vertex{ i, 150000000, NULL };
-        pq.push_back(tmpVertex);
-    }
-
     for (int i = 0; i < e; i++) {
         int s, e, w; cin >> s >> e >> w;
-        pq[s - 1]->adj.push_back(make_pair(pq[e - 1], w));
+        routeData.push_back(make_tuple(s, e, w));
     }
 
     cin >> start >> dest;
 
-    for (int i = 0; i < pq.size(); i++) {
-        if (start == pq[i]->idx) {
-            pq[i]->dist = 0;
-            break;
-        }
-    }
-
     Dijkstra(start);
-
-    deque<int> route;
     sort(vertexArr.begin(), vertexArr.end(), cmp);
-
-    cout << vertexArr[dest - 1]->dist << '\n';
-    int cur = dest - 1;
-
-    while (true) {
-        if (vertexArr[cur]->prev->idx == start) {
-            route.push_front(vertexArr[cur]->idx);
-            route.push_front(vertexArr[cur]->prev->idx);
-            break;
-        }
-        route.push_front(vertexArr[cur]->idx);
-        cur = vertexArr[cur]->prev->idx - 1;
-    }
-
-    cout << route.size() << '\n';
-
-    while (!route.empty()) {
-        cout << route.front() << ' ';
-        route.pop_front();
-    }
+    
+    vertexArr[dest - 1]->dist < 150000000 ? cout << vertexArr[dest - 1]->dist : cout << -1;
 
     return 0;
 }
