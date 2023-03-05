@@ -26,7 +26,7 @@ int BSearch(T arr[], int first, int last, T target) {
 int main() {
 	int arr[15] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
-	cout << BSearch(arr, 0, 14, 33);
+	cout << BSearch(arr, 0, 14, 3);
 
 
 	return 0;
